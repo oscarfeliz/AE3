@@ -13,6 +13,41 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ### 1. Descomprimir el fichero comprimido que contiene los registros del servidor, y a partir de los datos extraídos, cargar en data frame los registros con las peticiones servidas.
 
+```{r}
+#adaptar a nuestro caso
+# Definir el archivo comprimido y el directorio de salida
+compressed_file <- "logs_server.zip" # Cambia por el nombre de tu archivo
+output_directory <- "extracted_logs"
+
+# Paso 1: Descomprimir el archivo .zip
+unzip(compressed_file, exdir = output_directory)
+
+# Paso 2: Leer los registros en un data frame
+log_file <- file.path(output_directory, "access_log") # Archivo de logs dentro del directorio extraído
+logs_df <- read.table(
+  log_file,
+  header = FALSE,       # Los logs no suelen tener cabecera
+  sep = " ",            # Separador estándar en registros de Apache
+  stringsAsFactors = FALSE,
+  fill = TRUE           # Rellena filas cortas (logs incompletos)
+)
+
+# Paso 3: Dar nombres a las columnas del data frame
+colnames(logs_df) <- c(
+  "IP",             # Dirección IP del cliente
+  "Identity",       # Identidad del cliente (generalmente "-")
+  "User",           # Usuario autenticado (si aplica)
+  "Time",           # Tiempo de la solicitud
+  "Request",        # Método de solicitud (GET, POST)
+  "Status",         # Código de respuesta HTTP
+  "Bytes"           # Tamaño del cuerpo de la respuesta
+)
+
+# Inspeccionar los datos cargados
+head(logs_df)
+
+```
+
 ### 2. Incluid en el documento un apartado con la descripción de los datos analizados: fuente, tipología, descripción de la información contenida (los diferentes campos) y sus valores.
 
 # Limpieza de los Datos
