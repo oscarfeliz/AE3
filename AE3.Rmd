@@ -22,37 +22,55 @@ directorio_salida <- "logsEpa"
 unzip(fichero_comprimido, exdir = directorio_salida)
 
 # Leemos los registros en un data frame
-fichero_log <- file.path(directorio_salida, "epa-http.csv") # Archivo de logs dentro del directorio extraído
-logs_df <- read.table(
-  fichero_log,
-  header = FALSE,       # Los logs no suelen tener cabecera
-  sep = " ",            # Separador estándar en registros de Apache
-  stringsAsFactors = FALSE,
-  fill = TRUE           # Rellena filas cortas (logs incompletos)
-)
+fichero_log <- file.path(directorio_salida, "epa-http.csv")
 
-# Dar nombres a las columnas del data frame
-colnames(logs_df) <- c(
-  "IP",             # Dirección IP del cliente
-  "Identity",       # Identidad del cliente (generalmente "-")
-  "User",           # Usuario autenticado (si aplica)
-  "Time",           # Tiempo de la solicitud
-  "Request",        # Método de solicitud (GET, POST)
-  "Status",         # Código de respuesta HTTP
-  "Bytes"           # Tamaño del cuerpo de la respuesta
-)
+# Primero limpiamos las comillas del CSV
+texto_sin_comillas <- gsub('"', '', readLines(fichero_log))
 
-# Inspeccionar los datos cargados
+# Generamos un fichero temporal para no sobreescribir el fichero original
+temp_file <- tempfile()
+writeLines(texto_sin_comillas, temp_file)
+
+# Pasamos el archivo temporal en un dataframe
+logs_df <- read.table(temp_file, sep = "", header = FALSE, stringsAsFactors = FALSE,fill = TRUE)
+
+# Renombramos columnas
+colnames(logs_df) <- c("IP/address","FechaHora","Type", "URL", "Protocol","Mensaje","Response")
+
+# Formateamos
+logs_df[, 3] <- as.factor(logs_df[, 3])
+logs_df[, 6] <- as.factor(logs_df[, 6])
+logs_df[, 7] <- as.numeric(logs_df[, 7])
+
 head(logs_df)
-
 ```
 
 ### 2. Incluid en el documento un apartado con la descripción de los datos analizados: fuente, tipología, descripción de la información contenida (los diferentes campos) y sus valores.
+
+```{r}
+
+```
 
 # Limpieza de los Datos
 
 ### 3. Aprovechando que los datos a analizar son los mismos de la primera práctica, para esta entrega es imprescindible que los datos estén en formato de “datos elegantes”.
 
+```{r}
+
+```
+
 # Exploración de Datos
 
 ### 4. Identificar el número único de usuarios que han interactuado directamente con el servidor de forma segregada según si los usuarios han tenido algún tipo de error en las distintas peticiones ofrecidas por el servidor
+
+# 8. Clústering de datos
+
+### Utilizando un algoritmo de aprendizaje no supervisado, realizad un análisis de clústering con k-means para los datos del servidor
+
+```{r}
+
+library(mltools)
+library(data.table)
+epa_http_one_hot <- one_hot(as.data.table(logs_df), sparsifyNAs = TRUE)
+
+```
