@@ -18,3 +18,7 @@ knitr::opts_chunk$set(echo = TRUE)
 # Limpieza de los Datos
 
 ### 3. Aprovechando que los datos a analizar son los mismos de la primera práctica, para esta entrega es imprescindible que los datos estén en formato de “datos elegantes”.
+
+# Exploración de Datos
+
+### 4. Identificar el número único de usuarios que han interactuado directamente con el servidor de forma segregada según si los usuarios han tenido algún tipo de error en las distintas peticiones ofrecidas por el servidor
