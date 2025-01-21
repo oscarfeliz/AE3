@@ -23,6 +23,7 @@ unzip(fichero_comprimido, exdir = directorio_salida)
 
 # Leemos los registros en un data frame
 fichero_log <- file.path(directorio_salida, "epa-http.csv") # Archivo de logs dentro del directorio extraído
+
 logs_df <- read.table(
   fichero_log,
   header = FALSE,       # Los logs no suelen tener cabecera
