@@ -1,6 +1,6 @@
 ---
 title: "AE3"
-author: "Bruno Sánchez y Osca Feliz"
+author: "Bruno Sánchez y Oscar Feliz"
 date: "2025-01-21"
 output: html_document
 ---
@@ -14,25 +14,24 @@ knitr::opts_chunk$set(echo = TRUE)
 ### 1. Descomprimir el fichero comprimido que contiene los registros del servidor, y a partir de los datos extraídos, cargar en data frame los registros con las peticiones servidas.
 
 ```{r}
-#adaptar a nuestro caso
-# Definir el archivo comprimido y el directorio de salida
-compressed_file <- "logs_server.zip" # Cambia por el nombre de tu archivo
-output_directory <- "extracted_logs"
+# Definimos  archivo comprimido y  directorio de salida
+fichero_comprimido <- "epa-http.zip"
+directorio_salida <- "logsEpa"
 
-# Paso 1: Descomprimir el archivo .zip
-unzip(compressed_file, exdir = output_directory)
+# Descomprimimos
+unzip(fichero_comprimido, exdir = directorio_salida)
 
-# Paso 2: Leer los registros en un data frame
-log_file <- file.path(output_directory, "access_log") # Archivo de logs dentro del directorio extraído
+# Leemos los registros en un data frame
+fichero_log <- file.path(directorio_salida, "epa-http.csv") # Archivo de logs dentro del directorio extraído
 logs_df <- read.table(
-  log_file,
+  fichero_log,
   header = FALSE,       # Los logs no suelen tener cabecera
   sep = " ",            # Separador estándar en registros de Apache
   stringsAsFactors = FALSE,
   fill = TRUE           # Rellena filas cortas (logs incompletos)
 )
 
-# Paso 3: Dar nombres a las columnas del data frame
+# Dar nombres a las columnas del data frame
 colnames(logs_df) <- c(
   "IP",             # Dirección IP del cliente
   "Identity",       # Identidad del cliente (generalmente "-")
