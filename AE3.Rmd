@@ -47,9 +47,7 @@ head(logs_df)
 
 ### 2. Incluid en el documento un apartado con la descripción de los datos analizados: fuente, tipología, descripción de la información contenida (los diferentes campos) y sus valores.
 
-```{r}
-
-```
+Los datos importados son logs de un servidor Apache sobre peticiones registradas en un servidor. En este fichero de log contiene datos de la dirección de IP o dominio, la hora del registro, el tipo de petición (si es un GET o un POST), la URL a la que se hace la petición, el protocolo de la petición, el resultado (200 u otro diferente) y la respuesta.
 
 # Limpieza de los Datos
 
@@ -61,16 +59,44 @@ head(logs_df)
 
 # Exploración de Datos
 
-### 4. Identificar el número único de usuarios que han interactuado directamente con el servidor de forma segregada según si los usuarios han tenido algún tipo de error en las distintas peticiones ofrecidas por el servidor
+### 4. Identificar el número único de usuarios que han interactuado directamente con el servidor de forma segregada según si los usuarios han tenido algún tipo de error en las distintas peticiones ofrecidas por el servidor.
 
-# 8. Clústering de datos
+```{r}
 
-### Utilizando un algoritmo de aprendizaje no supervisado, realizad un análisis de clústering con k-means para los datos del servidor
+```
+
+# Análisis de Datos
+
+### 5. Analizar los distintos tipos de peticiones HTTP (GET, POST, PUT, DELETE) gestionadas por el servidor, identificando la frecuencia de cada una de estas. Repetir el análisis, esta vez filtrando previamente aquellas peticiones correspondientes a recursos ofrecidos de tipo imagen.
+
+# Visualización de Resultados
+
+### 6. Generar al menos 2 gráficos distintos que permitan visualizar alguna característica relevante de los datos analizados. Estos deberán representar por lo menos 1 o 2 variables diferentes del data frame. Describid el gráfico e indicad cualquier observación destacable que se pueda apreciar gracias a la representación gráfica.
+
+```{r}
+
+```
+
+### 7. Generar un gráfico que permita visualizar el número de peticiones servidas a lo largo del tiempo.
+
+```{r}
+
+```
+
+# Clústering de datos
+
+### 8. Utilizando un algoritmo de aprendizaje no supervisado, realizad un análisis de clústering con k-means para los datos del servidor
 
 ```{r}
 
 library(mltools)
 library(data.table)
 epa_http_one_hot <- one_hot(as.data.table(logs_df), sparsifyNAs = TRUE)
+
+```
+
+### 9. Representad visualmente en gráficos de tipo scatter plot el resultado de vuestros clústering y interpretad el resultado obtenido.
+
+```{r}
 
 ```
