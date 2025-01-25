@@ -9,6 +9,11 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+```{r}
+install.packages("ggplot2")
+library(ggplot2)
+```
+
 # Obtención y carga de los Datos
 
 ### 1. Descomprimir el fichero comprimido que contiene los registros del servidor, y a partir de los datos extraídos, cargar en data frame los registros con las peticiones servidas.
@@ -53,6 +58,8 @@ Los datos importados son logs de un servidor Apache sobre peticiones registradas
 
 ### 3. Aprovechando que los datos a analizar son los mismos de la primera práctica, para esta entrega es imprescindible que los datos estén en formato de “datos elegantes”.
 
+En el primer ejercicio, ya los hemos convertido en datos elegantes.
+
 ```{r}
 
 ```
@@ -62,25 +69,127 @@ Los datos importados son logs de un servidor Apache sobre peticiones registradas
 ### 4. Identificar el número único de usuarios que han interactuado directamente con el servidor de forma segregada según si los usuarios han tenido algún tipo de error en las distintas peticiones ofrecidas por el servidor.
 
 ```{r}
+# Filtramos los registros con errores (códigos 4xx y 5xx)
+errores_df <- logs_df[logs_df$Response >= 400 & logs_df$Response < 600, ]
 
+# Filtramos los registros sin errores (códigos 2xx y 3xx)
+sin_errores_df <- logs_df[logs_df$Response >= 200 & logs_df$Response < 400, ]
+
+# Contamos el número único de usuarios (IP/address) en cada grupo
+num_usuarios_con_errores <- length(unique(errores_df$'IP/address'))
+num_usuarios_sin_errores <- length(unique(sin_errores_df$'IP/address'))
+
+# Mostramos los resultados
+cat("Número único de usuarios con errores:", num_usuarios_con_errores, "\n")
+cat("Número único de usuarios sin errores:", num_usuarios_sin_errores, "\n")
 ```
 
 # Análisis de Datos
 
-### 5. Analizar los distintos tipos de peticiones HTTP (GET, POST, PUT, DELETE) gestionadas por el servidor, identificando la frecuencia de cada una de estas. Repetir el análisis, esta vez filtrando previamente aquellas peticiones correspondientes a recursos ofrecidos de tipo imagen.
+### 5. Analizar los distintos tipos de peticiones HTTP (GET, POST, PUT, DELETE) gestionadas por el servidor, identificando la frecuencia de cada una de estas. 
+
+```{r}
+# Contamos la frecuencia de cada tipo de petición HTTP
+frecuencia_peticiones <- table(logs_df$Type)
+
+# Mostramos los resultados
+print(frecuencia_peticiones)
+```
+
+### Repetir el análisis, esta vez filtrando previamente aquellas peticiones correspondientes a recursos ofrecidos de tipo imagen.
+
+```{r}
+# Filtramos las peticiones a recursos de tipo imagen
+recursos_imagen <- logs_df[grep("\\.(jpg|jpeg|png|gif)$", logs_df$URL, ignore.case = TRUE), ]
+
+# Extraemos las extensiones de los archivos de imagen
+recursos_imagen$Extension <- sub(".*\\.(jpg|jpeg|png|gif)$", "\\1", recursos_imagen$URL, ignore.case = TRUE)
+
+# Contamos la frecuencia de cada tipo de imagen
+frecuencia_imagenes <- table(recursos_imagen$Extension)
+
+# Mostramos los resultados
+print(frecuencia_imagenes)
+```
 
 # Visualización de Resultados
 
 ### 6. Generar al menos 2 gráficos distintos que permitan visualizar alguna característica relevante de los datos analizados. Estos deberán representar por lo menos 1 o 2 variables diferentes del data frame. Describid el gráfico e indicad cualquier observación destacable que se pueda apreciar gracias a la representación gráfica.
 
 ```{r}
+# Contamos la frecuencia de cada tipo de petición HTTP
+frecuencia_peticiones <- as.data.frame(table(logs_df$Type))
+colnames(frecuencia_peticiones) <- c("Tipo", "Frecuencia")
 
+# Generamos el gráfico de frecuencia de peticiones HTTP por tipo
+grafico_peticiones <- ggplot(data=frecuencia_peticiones, aes(x=Tipo, y=Frecuencia, fill=Tipo)) +
+  geom_bar(stat="identity") +
+  labs(title="Frecuencia de Peticiones HTTP por Tipo", x="Tipo de Petición", y="Frecuencia") +
+  theme_minimal()
+
+# Mostramos el gráfico
+print(grafico_peticiones)
+```
+
+```{r}
+# Filtramos las peticiones a recursos de tipo imagen
+recursos_imagen <- logs_df[grep("\\.(jpg|jpeg|png|gif)$", logs_df$URL, ignore.case = TRUE), ]
+
+# Extraemos las extensiones de los archivos de imagen
+recursos_imagen$Extension <- sub(".*\\.(jpg|jpeg|png|gif)$", "\\1", recursos_imagen$URL, ignore.case = TRUE)
+
+# Contamos la frecuencia de cada tipo de imagen
+frecuencia_imagenes <- as.data.frame(table(recursos_imagen$Extension))
+colnames(frecuencia_imagenes) <- c("TipoImagen", "Frecuencia")
+
+# Generamos el gráfico de frecuencia de tipos de imágenes solicitadas
+grafico_imagenes <- ggplot(data=frecuencia_imagenes, aes(x=TipoImagen, y=Frecuencia, fill=TipoImagen)) +
+  geom_bar(stat="identity") +
+  labs(title="Frecuencia de Tipos de Imágenes Solicitadas", x="Tipo de Imagen", y="Frecuencia") +
+  theme_minimal()
+
+# Mostramos el gráfico
+print(grafico_imagenes)
+```
+
+```{r}
+# Contamos la frecuencia de cada mensaje
+frecuencia_mensajes <- as.data.frame(table(logs_df$Mensaje))
+colnames(frecuencia_mensajes) <- c("Mensaje", "Frecuencia")
+
+# Generamos el gráfico de frecuencia de mensajes
+grafico_mensajes <- ggplot(data=frecuencia_mensajes, aes(x=Mensaje, y=Frecuencia, fill=Mensaje)) +
+  geom_bar(stat="identity") +
+  labs(title="Frecuencia de Mensajes", x="Mensaje", y="Frecuencia") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
+# Mostramos el gráfico
+print(grafico_mensajes)
 ```
 
 ### 7. Generar un gráfico que permita visualizar el número de peticiones servidas a lo largo del tiempo.
 
 ```{r}
+# Convertimos la columna FechaHora al formato adecuado
+logs_df$FechaHora <- as.POSIXct(logs_df$FechaHora, format="[%d:%H:%M:%S]")
 
+# Extraemos el día y la hora de la columna FechaHora
+logs_df$Dia <- as.Date(logs_df$FechaHora)
+logs_df$Minuto <- format(logs_df$FechaHora, "%Y-%m-%d %H:%M")
+
+# Contamos el número de peticiones por minuto
+peticiones_por_minuto <- as.data.frame(table(logs_df$Minuto))
+colnames(peticiones_por_minuto) <- c("Minuto", "Frecuencia")
+
+# Generamos el gráfico de peticiones por minuto
+grafico_minuto <- ggplot(data=peticiones_por_minuto, aes(x=as.POSIXct(Minuto, format="%Y-%m-%d %H:%M"), y=Frecuencia)) +
+  geom_line(color="blue") +
+  labs(title="Número de peticiones servidas por minuto", x="Minuto", y="Número de peticiones") +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
+# Mostramos el gráfico
+print(grafico_minuto)
 ```
 
 # Clústering de datos
