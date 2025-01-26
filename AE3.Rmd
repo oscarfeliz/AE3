@@ -40,12 +40,7 @@ writeLines(texto_sin_comillas, temp_file)
 logs_df <- read.table(temp_file, sep = "", header = FALSE, stringsAsFactors = FALSE,fill = TRUE)
 
 # Renombramos columnas
-colnames(logs_df) <- c("IP/address","FechaHora","Type", "URL", "Protocol","Mensaje","Response")
-
-# Formateamos
-logs_df[, 3] <- as.factor(logs_df[, 3])
-logs_df[, 6] <- as.factor(logs_df[, 6])
-logs_df[, 7] <- as.numeric(logs_df[, 7])
+colnames(logs_df) <- c("IP/address","FechaHora","Type", "URL", "Protocolo","Mensaje","Response")
 
 head(logs_df)
 ```
@@ -58,7 +53,15 @@ Los datos importados son logs de un servidor Apache sobre peticiones registradas
 
 ### 3. Aprovechando que los datos a analizar son los mismos de la primera práctica, para esta entrega es imprescindible que los datos estén en formato de “datos elegantes”.
 
-En el primer ejercicio, ya los hemos convertido en datos elegantes.
+```{r}
+# Normalizamos
+logs_df$Type <- as.factor(logs_df$Type)
+logs_df$Mensaje <- as.factor(logs_df$Mensaje)
+logs_df$Response <- as.numeric(logs_df$Response)
+logs_df$FechaHora <- as.POSIXct(logs_df$FechaHora, format="[%d:%H:%M:%S]")
+
+head(logs_df)
+```
 
 # Exploración de Datos
 
@@ -80,6 +83,18 @@ cat("Número único de usuarios con errores:", num_usuarios_con_errores, "\n")
 cat("Número único de usuarios sin errores:", num_usuarios_sin_errores, "\n")
 ```
 
+Hay varios tipos de errores presentes:
+
+-   **Error 400 (Bad Request)**: Este error ocurre cuando el servidor no puede entender la solicitud debido a una sintaxis incorrecta o una solicitud malformada.
+
+-   **Error 403 (Forbidden)**: Este error indica que el servidor ha entendido la solicitud, pero se niega a autorizarla. Esto suele ocurrir cuando no tienes permisos para acceder al recurso solicitado.
+
+-   **Error 404 (Not Found)**: Este error significa que el servidor no puede encontrar el recurso solicitado. Es común cuando la URL está mal escrita o el recurso ha sido eliminado.
+
+-   **Error 500 (Internal Server Error)**: Este error genérico indica que el servidor encontró una condición inesperada que le impidió cumplir con la solicitud.
+
+-   **Error 501 (Not Implemented)**: Este error significa que el servidor no reconoce el método de solicitud o no tiene la capacidad de soportarlo. Es una indicación de que la funcionalidad requerida no está implementada en el servidor.
+
 # Análisis de Datos
 
 ### 5. Analizar los distintos tipos de peticiones HTTP (GET, POST, PUT, DELETE) gestionadas por el servidor, identificando la frecuencia de cada una de estas.
@@ -88,31 +103,51 @@ cat("Número único de usuarios sin errores:", num_usuarios_sin_errores, "\n")
 # Contamos la frecuencia de cada tipo de petición HTTP
 frecuencia_peticiones <- table(logs_df$Type)
 
-# Mostramos los resultados
-print(frecuencia_peticiones)
+# Convertimos la tabla en un dataframe para facilitar la visualización y mostramos el resultado
+frecuencia_peticiones_df <- as.data.frame(frecuencia_peticiones)
+colnames(frecuencia_peticiones_df) <- c("Tipo de Peticion", "Frecuencia")
+print(frecuencia_peticiones_df)
 ```
 
 ### Repetir el análisis, esta vez filtrando previamente aquellas peticiones correspondientes a recursos ofrecidos de tipo imagen.
 
 ```{r}
-# Filtramos las peticiones a recursos de tipo imagen
-recursos_imagen <- logs_df[grep("\\.(jpg|jpeg|png|gif)$", logs_df$URL, ignore.case = TRUE), ]
+# Filtramos las peticiones que corresponden a recursos de tipo imagen
+logs_imagenes_df <- logs_df[grep("\\.(jpg|jpeg|png|gif|bmp)$", logs_df$URL, ignore.case = TRUE), ]
 
+# Contamos la frecuencia de cada tipo de petición HTTP para los recursos de tipo imagen
+frecuencia_peticiones_imagenes <- table(logs_imagenes_df$Type)
+
+# Convertimos la tabla en un dataframe y mostramos el resultado
+frecuencia_peticiones_imagenes_df <- as.data.frame(frecuencia_peticiones_imagenes)
+colnames(frecuencia_peticiones_imagenes_df) <- c("TipoPeticion", "Frecuencia")
+print(frecuencia_peticiones_imagenes_df)
+```
+
+Además, podemos ver los tipos de imágenes que se han cargado.
+
+```{r}
 # Extraemos las extensiones de los archivos de imagen
-recursos_imagen$Extension <- sub(".*\\.(jpg|jpeg|png|gif)$", "\\1", recursos_imagen$URL, ignore.case = TRUE)
+logs_imagenes_df$Extension <- tolower(sub(".*\\.(.*)$", "\\1", logs_imagenes_df$URL))
 
 # Contamos la frecuencia de cada tipo de imagen
-frecuencia_imagenes <- table(recursos_imagen$Extension)
+frecuencia_imagenes <- table(logs_imagenes_df$Extension)
 
-# Mostramos los resultados
-print(frecuencia_imagenes)
+# Convertimos la tabla en un dataframe y mostramos el resultado
+frecuencia_imagenes_df <- as.data.frame(frecuencia_imagenes)
+colnames(frecuencia_imagenes_df) <- c("TipoImagen", "Frecuencia")
+print(frecuencia_imagenes_df)
 ```
 
 # Visualización de Resultados
 
 ### 6. Generar al menos 2 gráficos distintos que permitan visualizar alguna característica relevante de los datos analizados. Estos deberán representar por lo menos 1 o 2 variables diferentes del data frame. Describid el gráfico e indicad cualquier observación destacable que se pueda apreciar gracias a la representación gráfica.
 
+En primer lugar, podemos observar que la mayoría de peticiones han sido de tipo GET.
+
 ```{r}
+library(ggplot2)
+
 # Contamos la frecuencia de cada tipo de petición HTTP
 frecuencia_peticiones <- as.data.frame(table(logs_df$Type))
 colnames(frecuencia_peticiones) <- c("Tipo", "Frecuencia")
@@ -127,26 +162,21 @@ grafico_peticiones <- ggplot(data=frecuencia_peticiones, aes(x=Tipo, y=Frecuenci
 print(grafico_peticiones)
 ```
 
+En segundo lugar, podemos ver que casi todas las imágenes descargadas son tipo GIF.
+
 ```{r}
-# Filtramos las peticiones a recursos de tipo imagen
-recursos_imagen <- logs_df[grep("\\.(jpg|jpeg|png|gif)$", logs_df$URL, ignore.case = TRUE), ]
-
-# Extraemos las extensiones de los archivos de imagen
-recursos_imagen$Extension <- sub(".*\\.(jpg|jpeg|png|gif)$", "\\1", recursos_imagen$URL, ignore.case = TRUE)
-
-# Contamos la frecuencia de cada tipo de imagen
-frecuencia_imagenes <- as.data.frame(table(recursos_imagen$Extension))
-colnames(frecuencia_imagenes) <- c("TipoImagen", "Frecuencia")
-
-# Generamos el gráfico de frecuencia de tipos de imágenes solicitadas
-grafico_imagenes <- ggplot(data=frecuencia_imagenes, aes(x=TipoImagen, y=Frecuencia, fill=TipoImagen)) +
-  geom_bar(stat="identity") +
-  labs(title="Frecuencia de Tipos de Imágenes Solicitadas", x="Tipo de Imagen", y="Frecuencia") +
-  theme_minimal()
+grafico_imagenes <- ggplot(frecuencia_imagenes_df, aes(x = TipoImagen, y = Frecuencia, fill=TipoImagen)) +
+  geom_bar(stat = "identity",) +
+  theme_minimal() +
+  labs(title = "Frecuencia de Tipos de Imágenes en Peticiones HTTP",
+       x = "Tipo de Imagen",
+       y = "Frecuencia")
 
 # Mostramos el gráfico
 print(grafico_imagenes)
 ```
+
+En tercer lugar, la mayoría de mensajes de repuesta han sido exitosos.
 
 ```{r}
 # Contamos la frecuencia de cada mensaje
@@ -190,18 +220,124 @@ print(grafico_minuto)
 
 # Clústering de datos
 
-### 8. Utilizando un algoritmo de aprendizaje no supervisado, realizad un análisis de clústering con k-means para los datos del servidor
+### 8. Utilizando un algoritmo de aprendizaje no supervisado, realizad un análisis de clústering con k-means para los datos del servidor.
 
 ```{r}
-
+# Librerías necesarias
 library(mltools)
 library(data.table)
+library(scales)
+library(ggplot2)
+
+# Convertimos las columnas de tipo carácter a factores y aplicamos one-hot encoding
 epa_http_one_hot <- one_hot(as.data.table(logs_df), sparsifyNAs = TRUE)
 
+# Generamos una columna numérica con el número de caracteres de la URL
+epa_http_one_hot$URL_length <- nchar(logs_df$URL)
+
+# Imputamos valores NA en la columna Response con 0 bytes servidos si el código de respuesta es 404
+epa_http_one_hot$Response[is.na(epa_http_one_hot$Response) & logs_df$Response == 404] <- 0
+
+# Normalizamos los datos
+epa_http_normalized <- as.data.frame(lapply(epa_http_one_hot, function(x) if(is.numeric(x)) rescale(x) else x))
+
+# Reemplazamos NA, NaN e Inf con la media de la columna
+epa_http_normalized <- as.data.frame(lapply(epa_http_normalized, function(x) if(is.numeric(x)) {
+  x[is.na(x) | is.nan(x) | is.infinite(x)] <- mean(x, na.rm = TRUE)
+  return(x)
+} else x))
+
+# Descartamos todas las columnas que no sean numéricas
+epa_http_numeric <- epa_http_normalized[sapply(epa_http_normalized, is.numeric)]
+
+# Aplicamos k-means con k=2, k=3, k=4 y k=5
+set.seed(123) # Para reproducibilidad
+kmeans_result_k2 <- kmeans(epa_http_numeric, centers = 2, nstart = 25)
+epa_http_numeric$cluster_k2 <- kmeans_result_k2$cluster
+
+kmeans_result_k3 <- kmeans(epa_http_numeric, centers = 3, nstart = 25)
+epa_http_numeric$cluster_k3 <- kmeans_result_k3$cluster
+
+kmeans_result_k4 <- kmeans(epa_http_numeric, centers = 4, nstart = 25)
+epa_http_numeric$cluster_k4 <- kmeans_result_k4$cluster
+
+kmeans_result_k5 <- kmeans(epa_http_numeric, centers = 5, nstart = 25)
+epa_http_numeric$cluster_k5 <- kmeans_result_k5$cluster
+
+# Gráficos de dispersión para k=2, k=3, k=4 y k=5
+plot_k2 <- ggplot(epa_http_numeric, aes(x = URL_length, y = Response, color = factor(cluster_k2))) +
+  geom_point() +
+  labs(title = "Clústering de peticiones del servidor con k=2", x = "Longitud de URL", y = "Response", color = "Clúster")
+
+plot_k3 <- ggplot(epa_http_numeric, aes(x = URL_length, y = Response, color = factor(cluster_k3))) +
+  geom_point() +
+  labs(title = "Clústering de peticiones del servidor con k=3", x = "Longitud de URL", y = "Response", color = "Clúster")
+
+plot_k4 <- ggplot(epa_http_numeric, aes(x = URL_length, y = Response, color = factor(cluster_k4))) +
+  geom_point() +
+  labs(title = "Clústering de peticiones del servidor con k=4", x = "Longitud de URL", y = "Response", color = "Clúster")
+
+plot_k5 <- ggplot(epa_http_numeric, aes(x = URL_length, y = Response, color = factor(cluster_k5))) +
+  geom_point() +
+  labs(title = "Clústering de peticiones del servidor con k=5", x = "Longitud de URL", y = "Response", color = "Clúster")
+
+# Mostramos los gráficos
+print(plot_k2)
+print(plot_k3)
+print(plot_k4)
+print(plot_k5)
 ```
 
-### 9. Representad visualmente en gráficos de tipo scatter plot el resultado de vuestros clústering y interpretad el resultado obtenido.
-
 ```{r}
+library(tidyr)
+library(dplyr)
+library(ggplot2)
+
+# Seleccionamos de las columnas de interés
+variables_clustering <- epa_http_numeric[, c("Type_GET", "Type_HEAD", "Type_POST", "Mensaje_200", "Mensaje_302", "Mensaje_304", "Mensaje_400", "Mensaje_403", "Mensaje_404", "Mensaje_500", "Mensaje_501")]
+
+# Aplicamos k-means para k = 2, 3, 4
+set.seed(123)  # Para reproducibilidad
+
+k2 <- kmeans(variables_clustering, centers = 2, nstart = 25)
+k3 <- kmeans(variables_clustering, centers = 3, nstart = 25)
+k4 <- kmeans(variables_clustering, centers = 4, nstart = 25)
+
+# Agregamos los resultados de clústeres al dataframe original
+epa_http_numeric$Cluster_k2 <- as.factor(k2$cluster)
+epa_http_numeric$Cluster_k3 <- as.factor(k3$cluster)
+epa_http_numeric$Cluster_k4 <- as.factor(k4$cluster)
+
+# Reestructuramos los datos para que cada fila tenga un solo valor de Type y Mensaje
+long_data <- variables_clustering %>%
+  mutate(Cluster_k2 = epa_http_numeric$Cluster_k2,
+         Cluster_k3 = epa_http_numeric$Cluster_k3,
+         Cluster_k4 = epa_http_numeric$Cluster_k4) %>%
+  pivot_longer(cols = c("Type_GET", "Type_HEAD", "Type_POST"), 
+               names_to = "Type", 
+               values_to = "Type_Value") %>%
+  pivot_longer(cols = starts_with("Mensaje"), 
+               names_to = "Mensaje", 
+               values_to = "Mensaje_Value") %>%
+  filter(Type_Value == 1 & Mensaje_Value == 1)  
+
+# Creamos una función para graficar los clústeres
+plot_clusters <- function(data, cluster_col, title) {
+  ggplot(data, aes(x = Type, y = Mensaje, color = !!sym(cluster_col))) +
+    geom_jitter(width = 0.2, height = 0.2, alpha = 0.7, size = 2) +
+    labs(title = title, x = "Type ", y = "Mensaje ") +
+    theme_minimal()
+}
+
+
+# Graficamos los clústeres para k = 2, 3, 4
+p1 <- plot_clusters(long_data, "Cluster_k2", "Clustering con k = 2")
+p2 <- plot_clusters(long_data, "Cluster_k3", "Clustering con k = 3")
+p3 <- plot_clusters(long_data, "Cluster_k4", "Clustering con k = 4")
+
+# Mostramos gráficos
+print(p1)
+print(p2)
+print(p3)
 
 ```
