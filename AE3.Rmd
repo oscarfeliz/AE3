@@ -253,7 +253,6 @@ print(grafico_minuto)
 ### 8. Utilizando un algoritmo de aprendizaje no supervisado, realizad un análisis de clústering con k-means para los datos del servidor.
 
 ```{r}
-{r}
 # Librerías necesarias
 library(mltools)
 library(data.table)
@@ -310,7 +309,6 @@ logs_df$cluster_k5 <- epa_http_numeric$cluster_k5
 En primer lugar, podemos observar los clusters obtenidos con las variables longitud de la URL y Response.
 
 ```{r}
-{r}
 # Gráficos de dispersión para k=2, k=3, k=4 y k=5}
 plot_k2 <- ggplot(epa_http_numeric, aes(x = URL_length, y = Response, color = factor(cluster_k2))) +
   geom_point() +
@@ -338,7 +336,6 @@ print(plot_k5)
 ## Tipo de Petición y Mensaje de Respuesta
 
 ```{r}
-{r}
 plot2_k2 <- ggplot(logs_df, aes(x = Type, y = Mensaje, color = factor(cluster_k2))) +
   geom_point(size=5) +
   labs(title = "Clústering de peticiones del servidor con k=2", x = "Tipo de petición", y = "Respuesta", color = "Clúster")
@@ -365,7 +362,6 @@ print(plot2_k5)
 ### Tipo de Petición y Respuesta
 
 ```{r}
-{r}
 plot3_k2 <- ggplot(logs_df, aes(x = Type, y = URL_length, color = factor(cluster_k2))) +
   geom_point(  ) +
   labs(title = "Clústering de peticiones del servidor con k=2", x = "Tipo de petición", y = "Respuesta", color = "Clúster")
@@ -392,7 +388,6 @@ print(plot3_k5)
 ### Respuesta y Longitud de la URL
 
 ```{r}
-{r}
 plot4_k2 <- ggplot(logs_df, aes(x = Mensaje, y = URL_length, color = factor(cluster_k2))) +
   geom_point(  ) +
   labs(title = "Clústering de peticiones del servidor con k=2", x = "Tipo de respuesta", y = "Longitud de URL", color = "Clúster")
