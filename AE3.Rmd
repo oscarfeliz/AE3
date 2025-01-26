@@ -9,11 +9,6 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-```{r}
-install.packages("ggplot2")
-library(ggplot2)
-```
-
 # Obtención y carga de los Datos
 
 ### 1. Descomprimir el fichero comprimido que contiene los registros del servidor, y a partir de los datos extraídos, cargar en data frame los registros con las peticiones servidas.
@@ -258,6 +253,7 @@ print(grafico_minuto)
 ### 8. Utilizando un algoritmo de aprendizaje no supervisado, realizad un análisis de clústering con k-means para los datos del servidor.
 
 ```{r}
+{r}
 # Librerías necesarias
 library(mltools)
 library(data.table)
@@ -298,11 +294,24 @@ epa_http_numeric$cluster_k4 <- kmeans_result_k4$cluster
 
 kmeans_result_k5 <- kmeans(epa_http_numeric, centers = 5, nstart = 25)
 epa_http_numeric$cluster_k5 <- kmeans_result_k5$cluster
+
+# Añadimos las columnas de clusters a logs_df
+logs_df$URL_length <- epa_http_numeric$URL_length
+logs_df$cluster_k2 <- epa_http_numeric$cluster_k2
+logs_df$cluster_k3 <- epa_http_numeric$cluster_k3
+logs_df$cluster_k4 <- epa_http_numeric$cluster_k4
+logs_df$cluster_k5 <- epa_http_numeric$cluster_k5
 ```
 
 ### 9. Representad visualmente en gráficos de tipo scatter plot el resultado de vuestros clústering y interpretad el resultado obtenido
 
-```{# Gráficos de dispersión para k=2, k=3, k=4 y k=5}
+### Longitud URL y Response
+
+En primer lugar, podemos observar los clusters obtenidos con las variables longitud de la URL y Response.
+
+```{r}
+{r}
+# Gráficos de dispersión para k=2, k=3, k=4 y k=5}
 plot_k2 <- ggplot(epa_http_numeric, aes(x = URL_length, y = Response, color = factor(cluster_k2))) +
   geom_point() +
   labs(title = "Clústering de peticiones del servidor con k=2", x = "Longitud de URL", y = "Response", color = "Clúster")
@@ -326,56 +335,83 @@ print(plot_k4)
 print(plot_k5)
 ```
 
+## Tipo de Petición y Mensaje de Respuesta
+
 ```{r}
-library(tidyr)
-library(dplyr)
-library(ggplot2)
+{r}
+plot2_k2 <- ggplot(logs_df, aes(x = Type, y = Mensaje, color = factor(cluster_k2))) +
+  geom_point(size=5) +
+  labs(title = "Clústering de peticiones del servidor con k=2", x = "Tipo de petición", y = "Respuesta", color = "Clúster")
 
-# Seleccionamos de las columnas de interés
-variables_clustering <- epa_http_numeric[, c("Type_GET", "Type_HEAD", "Type_POST", "Mensaje_200", "Mensaje_302", "Mensaje_304", "Mensaje_400", "Mensaje_403", "Mensaje_404", "Mensaje_500", "Mensaje_501")]
+plot2_k3 <- ggplot(logs_df, aes(x = Type, y = Mensaje, color = factor(cluster_k3))) +
+  geom_point(size=5) +
+  labs(title = "Clústering de peticiones del servidor con k=3", x = "Tipo de petición", y = "Respuesta", color = "Clúster")
 
-# Aplicamos k-means para k = 2, 3, 4
-set.seed(123)  # Para reproducibilidad
+plot2_k4 <- ggplot(logs_df, aes(x = Type, y = Mensaje, color = factor(cluster_k4))) +
+  geom_point(size=5) +
+  labs(title = "Clústering de peticiones del servidor con k=4", x = "Tipo de petición", y = "Respuesta", color = "Clúster")
 
-k2 <- kmeans(variables_clustering, centers = 2, nstart = 25)
-k3 <- kmeans(variables_clustering, centers = 3, nstart = 25)
-k4 <- kmeans(variables_clustering, centers = 4, nstart = 25)
+plot2_k5 <- ggplot(logs_df, aes(x = Type, y = Mensaje, color = factor(cluster_k5))) +
+  geom_point(size=5) +
+  labs(title = "Clústering de peticiones del servidor con k=5", x = "Tipo de petición", y = "Respuesta", color = "Clúster")
 
-# Agregamos los resultados de clústeres al dataframe original
-epa_http_numeric$Cluster_k2 <- as.factor(k2$cluster)
-epa_http_numeric$Cluster_k3 <- as.factor(k3$cluster)
-epa_http_numeric$Cluster_k4 <- as.factor(k4$cluster)
+# Mostramos los gráficos
+print(plot2_k2)
+print(plot2_k3)
+print(plot2_k4)
+print(plot2_k5)
+```
 
-# Reestructuramos los datos para que cada fila tenga un solo valor de Type y Mensaje
-long_data <- variables_clustering %>%
-  mutate(Cluster_k2 = epa_http_numeric$Cluster_k2,
-         Cluster_k3 = epa_http_numeric$Cluster_k3,
-         Cluster_k4 = epa_http_numeric$Cluster_k4) %>%
-  pivot_longer(cols = c("Type_GET", "Type_HEAD", "Type_POST"), 
-               names_to = "Type", 
-               values_to = "Type_Value") %>%
-  pivot_longer(cols = starts_with("Mensaje"), 
-               names_to = "Mensaje", 
-               values_to = "Mensaje_Value") %>%
-  filter(Type_Value == 1 & Mensaje_Value == 1)  
+### Tipo de Petición y Respuesta
 
-# Creamos una función para graficar los clústeres
-plot_clusters <- function(data, cluster_col, title) {
-  ggplot(data, aes(x = Type, y = Mensaje, color = !!sym(cluster_col))) +
-    geom_jitter(width = 0.2, height = 0.2, alpha = 0.7, size = 2) +
-    labs(title = title, x = "Type ", y = "Mensaje ") +
-    theme_minimal()
-}
+```{r}
+{r}
+plot3_k2 <- ggplot(logs_df, aes(x = Type, y = URL_length, color = factor(cluster_k2))) +
+  geom_point(  ) +
+  labs(title = "Clústering de peticiones del servidor con k=2", x = "Tipo de petición", y = "Respuesta", color = "Clúster")
 
+plot3_k3 <- ggplot(logs_df, aes(x = Type, y = URL_length, color = factor(cluster_k3))) +
+  geom_point(  ) +
+  labs(title = "Clústering de peticiones del servidor con k=3", x = "Tipo de petición", y = "Respuesta", color = "Clúster")
 
-# Graficamos los clústeres para k = 2, 3, 4
-p1 <- plot_clusters(long_data, "Cluster_k2", "Clustering con k = 2")
-p2 <- plot_clusters(long_data, "Cluster_k3", "Clustering con k = 3")
-p3 <- plot_clusters(long_data, "Cluster_k4", "Clustering con k = 4")
+plot3_k4 <- ggplot(logs_df, aes(x = Type, y = URL_length, color = factor(cluster_k4))) +
+  geom_point(  ) +
+  labs(title = "Clústering de peticiones del servidor con k=4", x = "Tipo de petición", y = "Respuesta", color = "Clúster")
 
-# Mostramos gráficos
-print(p1)
-print(p2)
-print(p3)
+plot3_k5 <- ggplot(logs_df, aes(x = Type, y = URL_length, color = factor(cluster_k5))) +
+  geom_point(  ) +
+  labs(title = "Clústering de peticiones del servidor con k=5", x = "Tipo de petición", y = "Respuesta", color = "Clúster")
 
+# Mostramos los gráficos
+print(plot3_k2)
+print(plot3_k3)
+print(plot3_k4)
+print(plot3_k5)
+```
+
+### Respuesta y Longitud de la URL
+
+```{r}
+{r}
+plot4_k2 <- ggplot(logs_df, aes(x = Mensaje, y = URL_length, color = factor(cluster_k2))) +
+  geom_point(  ) +
+  labs(title = "Clústering de peticiones del servidor con k=2", x = "Tipo de respuesta", y = "Longitud de URL", color = "Clúster")
+
+plot4_k3 <- ggplot(logs_df, aes(x = Mensaje, y = URL_length, color = factor(cluster_k3))) +
+  geom_point(  ) +
+  labs(title = "Clústering de peticiones del servidor con k=3", x = "Tipo de respuesta", y = "Longitud de URL", color = "Clúster")
+
+plot4_k4 <- ggplot(logs_df, aes(x = Mensaje, y = URL_length, color = factor(cluster_k4))) +
+  geom_point(  ) +
+  labs(title = "Clústering de peticiones del servidor con k=4", x = "Tipo de respuesta", y = "Longitud de URL", color = "Clúster")
+
+plot4_k5 <- ggplot(logs_df, aes(x = Mensaje, y = URL_length, color = factor(cluster_k5))) +
+  geom_point(  ) +
+  labs(title = "Clústering de peticiones del servidor con k=5", x = "Tipo de respuesta", y = "Longitud de URL", color = "Clúster")
+
+# Mostramos los gráficos
+print(plot4_k2)
+print(plot4_k3)
+print(plot4_k4)
+print(plot4_k5)
 ```
