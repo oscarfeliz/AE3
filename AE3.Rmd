@@ -60,10 +60,6 @@ Los datos importados son logs de un servidor Apache sobre peticiones registradas
 
 En el primer ejercicio, ya los hemos convertido en datos elegantes.
 
-```{r}
-
-```
-
 # Exploración de Datos
 
 ### 4. Identificar el número único de usuarios que han interactuado directamente con el servidor de forma segregada según si los usuarios han tenido algún tipo de error en las distintas peticiones ofrecidas por el servidor.
@@ -86,7 +82,7 @@ cat("Número único de usuarios sin errores:", num_usuarios_sin_errores, "\n")
 
 # Análisis de Datos
 
-### 5. Analizar los distintos tipos de peticiones HTTP (GET, POST, PUT, DELETE) gestionadas por el servidor, identificando la frecuencia de cada una de estas. 
+### 5. Analizar los distintos tipos de peticiones HTTP (GET, POST, PUT, DELETE) gestionadas por el servidor, identificando la frecuencia de cada una de estas.
 
 ```{r}
 # Contamos la frecuencia de cada tipo de petición HTTP
