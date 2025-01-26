@@ -333,7 +333,7 @@ print(plot_k4)
 print(plot_k5)
 ```
 
-## Tipo de Petición y Mensaje de Respuesta
+### Tipo de Petición y Mensaje de Respuesta
 
 ```{r}
 plot2_k2 <- ggplot(logs_df, aes(x = Type, y = Mensaje, color = factor(cluster_k2))) +
@@ -359,7 +359,7 @@ print(plot2_k4)
 print(plot2_k5)
 ```
 
-### Tipo de Petición y Respuesta
+### Tipo de Petición y Longitud URL
 
 ```{r}
 plot3_k2 <- ggplot(logs_df, aes(x = Type, y = URL_length, color = factor(cluster_k2))) +
@@ -410,3 +410,223 @@ print(plot4_k3)
 print(plot4_k4)
 print(plot4_k5)
 ```
+
+Como se puede ver, en los gráficos anteriores los clústeres no son muy precisos en representaciones de dos variables. Eso se debe han sido generados teniendo en cuenta todas las variables, incluyendo algunas independientes a las representaciones.
+
+Ahora, corregiremos esta situación, usando el algoritmo K-Means únicamente para dos variables, analizando la posible relación cuando K=5.
+
+### Longitud URL y Response
+
+```{r}
+epa_http_numeric2 <- epa_http_normalized[, c("URL_length", "Response")]
+
+set.seed(123)
+kmeans_result_k22 <- kmeans(epa_http_numeric2, centers = 2, nstart = 25)
+epa_http_numeric2$cluster_k22 <- kmeans_result_k22$cluster
+
+kmeans_result_k23 <- kmeans(epa_http_numeric2, centers = 3, nstart = 25)
+epa_http_numeric2$cluster_k23 <- kmeans_result_k23$cluster
+
+kmeans_result_k24 <- kmeans(epa_http_numeric2, centers = 4, nstart = 25)
+epa_http_numeric2$cluster_k24 <- kmeans_result_k24$cluster
+
+kmeans_result_k25 <- kmeans(epa_http_numeric2, centers = 5, nstart = 25)
+epa_http_numeric2$cluster_k25 <- kmeans_result_k25$cluster
+
+# Generamos el gráfico
+plot_k22 <- ggplot(epa_http_numeric2, aes(x = URL_length, y = Response, color = factor(cluster_k22))) +
+  geom_point() +
+  labs(title = "Clústering de peticiones del servidor con k=2", x = "Longitud de URL", y = "Response", color = "Clúster")
+
+plot_k23 <- ggplot(epa_http_numeric2, aes(x = URL_length, y = Response, color = factor(cluster_k23))) +
+  geom_point() +
+  labs(title = "Clústering de peticiones del servidor con k=3", x = "Longitud de URL", y = "Response", color = "Clúster")
+
+plot_k24 <- ggplot(epa_http_numeric2, aes(x = URL_length, y = Response, color = factor(cluster_k24))) +
+  geom_point() +
+  labs(title = "Clústering de peticiones del servidor con k=4", x = "Longitud de URL", y = "Response", color = "Clúster")
+
+plot_k25 <- ggplot(epa_http_numeric2, aes(x = URL_length, y = Response, color = factor(cluster_k25))) +
+  geom_point() +
+  labs(title = "Clústering de peticiones del servidor con k=5", x = "Longitud de URL", y = "Response", color = "Clúster")
+
+print(plot_k22)
+print(plot_k23)
+print(plot_k24)
+print(plot_k25)
+```
+
+-   El clúster 1 (rojo) parece concentrarse en las peticiones con longitudes de URL más pequeñas (cercanas a 0) y con respuestas bajas.
+
+-   El clúster 2 (verde) abarca peticiones también con longitudes cortas, pero se extiende más en el eje de respuesta.
+
+-   El clúster 3 (azul) cubre una región similar a los clústeres 1 y 2, pero con un mayor rango de respuesta.
+
+-   Los clústeres 4 (morado) y 5 (rosa) dominan en las zonas con longitudes de URL medias y altas. El clúster 4 tiene una mayor dispersión en el eje de respuesta, mientras que el clúster 5 parece estar más concentrado.
+
+    Los clústeres muestran diferencias claras en el rango de respuestas, lo que sugiere que la longitud de la URL puede influir en el comportamiento del servidor. Las peticiones con longitudes más cortas tienden a generar respuestas más rápidas, mientras que las más largas pueden estar asociadas con tiempos de respuesta más diversos o específicos.
+
+### Tipo de Petición y Mensaje de Respuesta
+
+```{r}
+epa_http_numeric3 <- epa_http_normalized[, c("Type_GET", "Type_HEAD", "Type_POST", "Mensaje_200","Mensaje_302","Mensaje_304","Mensaje_400","Mensaje_403","Mensaje_404","Mensaje_500","Mensaje_501")]
+
+set.seed(123)
+kmeans_result_k32 <- kmeans(epa_http_numeric3, centers = 2, nstart = 25)
+epa_http_numeric3$cluster_k32 <- kmeans_result_k32$cluster
+
+kmeans_result_k33 <- kmeans(epa_http_numeric3, centers = 3, nstart = 25)
+epa_http_numeric3$cluster_k33 <- kmeans_result_k33$cluster
+
+kmeans_result_k34 <- kmeans(epa_http_numeric3, centers = 4, nstart = 25)
+epa_http_numeric3$cluster_k34 <- kmeans_result_k34$cluster
+
+kmeans_result_k35 <- kmeans(epa_http_numeric3, centers = 5, nstart = 25)
+epa_http_numeric3$cluster_k35 <- kmeans_result_k35$cluster
+
+epa_http_numeric3$Type <- logs_df$Type
+epa_http_numeric3$Mensaje <- logs_df$Mensaje
+
+plot32 <- ggplot(epa_http_numeric3, aes(x = Type, y = Mensaje, color = factor(cluster_k32))) +
+  geom_point(size=5) +
+  labs(title = "Clústering de peticiones del servidor con k=3", x = "Tipo de petición", y = "Respuesta", color = "Clúster")
+
+plot33 <- ggplot(epa_http_numeric3, aes(x = Type, y = Mensaje, color = factor(cluster_k33))) +
+  geom_point(size=5) +
+  labs(title = "Clústering de peticiones del servidor con k=3", x = "Tipo de petición", y = "Respuesta", color = "Clúster")
+
+plot34 <- ggplot(epa_http_numeric3, aes(x = Type, y = Mensaje, color = factor(cluster_k34))) +
+  geom_point(size=5) +
+  labs(title = "Clústering de peticiones del servidor con k=4", x = "Tipo de petición", y = "Respuesta", color = "Clúster")
+
+plot35 <- ggplot(epa_http_numeric3, aes(x = Type, y = Mensaje, color = factor(cluster_k35))) +
+  geom_point(size=5) +
+  labs(title = "Clústering de peticiones del servidor con k=5", x = "Tipo de petición", y = "Respuesta", color = "Clúster")
+
+# Mostramos los gráficos
+print(plot32)
+print(plot33)
+print(plot34)
+print(plot35)
+```
+
+-   Peticiones GET. La mayoría de las respuestas están concentradas en los códigos 200, 302, y 304. El clúster 3 (verde) domina las respuestas exitosas 200, lo que indica que este tipo de peticiones tiene buen desempeño. Para los códigos de redirección (302) y respuestas no modificadas (304), los clústeres 4 (azul) y 5 (morado) predominan.
+
+-   Peticiones HEAD. Este tipo de petición tiene menos variabilidad y se agrupa en respuestas 200 y 304. El clúster 5 (morado) domina las respuestas de éxito 200, mientras que el clúster 4 (azul) aparece en 304.
+
+-   Peticiones POST. En estas peticiones, los clústeres están presentes en 200, 302, y códigos de error como 404 y 500. Clúster 5 (morado) está asociado con las respuestas exitosas 200, mientras que clúster 2 (amarillo) domina en los errores del servidor (500) y errores de cliente como el 404.
+
+-   Errores (404 y 500). Los códigos de error se concentran mayoritariamente en el clúster 2 (amarillo), lo que puede indicar que estas peticiones tienen un comportamiento común que el servidor identifica de forma diferente al resto.
+
+Los resultados podrían ayudar a identificar qué tipos de peticiones generan más problemas (errores 404 y 500), lo que podría ser útil para depurar y optimizar la infraestructura del servidor. El análisis permite observar qué tipos de respuestas (como las exitosas 200 o 304) están relacionadas con cada tipo de petición, ayudando a optimizar el desempeño de ciertas operaciones como GET o POST.
+
+### Tipo de Petición y Respuesta
+
+```{r}
+epa_http_numeric4 <- epa_http_normalized[, c("Type_GET", "Type_HEAD", "Type_POST","Response")]
+
+set.seed(123)
+kmeans_result_k42 <- kmeans(epa_http_numeric4, centers = 2, nstart = 25)
+epa_http_numeric4$cluster_k42 <- kmeans_result_k42$cluster
+
+kmeans_result_k43 <- kmeans(epa_http_numeric4, centers = 3, nstart = 25)
+epa_http_numeric4$cluster_k43 <- kmeans_result_k43$cluster
+
+kmeans_result_k44 <- kmeans(epa_http_numeric4, centers = 4, nstart = 25)
+epa_http_numeric4$cluster_k44 <- kmeans_result_k44$cluster
+
+kmeans_result_k45 <- kmeans(epa_http_numeric4, centers = 5, nstart = 25)
+epa_http_numeric4$cluster_k45 <- kmeans_result_k45$cluster
+
+epa_http_numeric4$Type <- logs_df$Type
+
+plot42 <- ggplot(epa_http_numeric4, aes(x = Type, y = Response, color = factor(cluster_k42))) +
+  geom_point(  ) +
+  labs(title = "Clústering de peticiones del servidor con k=2", x = "Tipo de petición", y = "Respuesta", color = "Clúster")
+
+plot43 <- ggplot(epa_http_numeric4, aes(x = Type, y = Response, color = factor(cluster_k43))) +
+  geom_point(  ) +
+  labs(title = "Clústering de peticiones del servidor con k=3", x = "Tipo de petición", y = "Respuesta", color = "Clúster")
+
+plot44 <- ggplot(epa_http_numeric4, aes(x = Type, y = Response, color = factor(cluster_k44))) +
+  geom_point(  ) +
+  labs(title = "Clústering de peticiones del servidor con k=4", x = "Tipo de petición", y = "Respuesta", color = "Clúster")
+
+plot45 <- ggplot(epa_http_numeric4, aes(x = Type, y = Response, color = factor(cluster_k45))) +
+  geom_point(  ) +
+  labs(title = "Clústering de peticiones del servidor con k=5", x = "Tipo de petición", y = "Respuesta", color = "Clúster")
+
+print(plot42)
+print(plot43)
+print(plot44)
+print(plot45)
+```
+
+-   Clúster 5 (morado). Aparece predominantemente en las peticiones GET. Concentra la mayoría de los datos con respuestas altas (cercanas a 1), lo que podría indicar peticiones exitosas o repetidas.
+
+-   Clúster 2 (verde). Asociado a las peticiones GET con respuestas más bajas (cercanas a 0.25). Podría estar relacionado con errores o redirecciones específicas.
+
+-   Clúster 3 (azul). Exclusivo de peticiones HEAD, lo que puede reflejar su bajo uso o propósito específico. La respuesta está muy baja (cercana a 0), lo que puede indicar que estas solicitudes no producen un contenido extenso.
+
+-   Clúster 1 (rojo). Asociado únicamente con POST. Las respuestas son más bajas (cercanas a 0), posiblemente debido a errores o resultados esperados específicos de las operaciones POST.
+
+-   Clúster 4 (amarillo). También aparece con GET, aunque en menor proporción que el clúster morado. Respuestas concentradas en un rango medio, lo que podría representar peticiones parcialmente exitosas o diferentes contextos de uso.
+
+Las peticiones GET son las más dominantes, divididas en varios clústeres que representan diferentes respuestas del servidor. Las solicitudes HEAD se utilizan con menor frecuencia y presentan respuestas consistentes y bajas. Por su parte, las peticiones POST, aunque menos comunes, se agrupan en un clúster específico, reflejando un patrón claro en su comportamiento. En general, los clústeres permiten identificar patrones de uso y posibles anomalías en la gestión de los distintos tipos de peticiones al servidor.
+
+### Respuesta y Longitud de la URL
+
+```{r}
+epa_http_numeric5 <- epa_http_normalized[, c("Mensaje_200","Mensaje_302","Mensaje_304","Mensaje_400","Mensaje_403","Mensaje_404","Mensaje_500","Mensaje_501","URL_length")]
+
+set.seed(123)
+kmeans_result_k52 <- kmeans(epa_http_numeric5, centers = 2, nstart = 25)
+epa_http_numeric5$cluster_k52 <- kmeans_result_k52$cluster
+
+kmeans_result_k53 <- kmeans(epa_http_numeric5, centers = 3, nstart = 25)
+epa_http_numeric5$cluster_k53 <- kmeans_result_k53$cluster
+
+kmeans_result_k54 <- kmeans(epa_http_numeric5, centers = 4, nstart = 25)
+epa_http_numeric5$cluster_k54 <- kmeans_result_k54$cluster
+
+kmeans_result_k55 <- kmeans(epa_http_numeric5, centers = 5, nstart = 25)
+epa_http_numeric5$cluster_k55 <- kmeans_result_k55$cluster
+
+epa_http_numeric5$Mensaje <- logs_df$Mensaje
+
+
+plot52 <- ggplot(epa_http_numeric5, aes(x = Mensaje, y = URL_length, color = factor(cluster_k52))) +
+  geom_point(  ) +
+  labs(title = "Clústering de peticiones del servidor con k=2", x = "Tipo de respuesta", y = "Longitud de URL", color = "Clúster")
+
+plot53 <- ggplot(epa_http_numeric5, aes(x = Mensaje, y = URL_length, color = factor(cluster_k53))) +
+  geom_point(  ) +
+  labs(title = "Clústering de peticiones del servidor con k=3", x = "Tipo de respuesta", y = "Longitud de URL", color = "Clúster")
+
+plot54 <- ggplot(epa_http_numeric5, aes(x = Mensaje, y = URL_length, color = factor(cluster_k54))) +
+  geom_point(  ) +
+  labs(title = "Clústering de peticiones del servidor con k=4", x = "Tipo de respuesta", y = "Longitud de URL", color = "Clúster")
+
+plot55 <- ggplot(epa_http_numeric5, aes(x = Mensaje, y = URL_length, color = factor(cluster_k55))) +
+  geom_point(  ) +
+  labs(title = "Clústering de peticiones del servidor con k=5", x = "Tipo de respuesta", y = "Longitud de URL", color = "Clúster")
+
+print(plot52)
+print(plot53)
+print(plot54)
+print(plot55)
+```
+
+-   Clúster 1 (rojo). Mayor concentración en el código 200. Agrupa muchas peticiones con URLs cortas, que probablemente sean accesos exitosos a recursos comunes.
+
+-   Clúster 2 (verde). Principalmente asociado con códigos de redirección (302 y 304). URLs de longitud consistente, posiblemente debido a recursos estáticos (imágenes, scripts, etc.).
+
+-   Clúster 3 (azul). Aparece con los códigos de error más graves (404, 500, 501). Las URLs son de diversas longitudes, indicando que los errores podrían estar distribuidos en diferentes tipos de recursos.
+
+-   Clúster 4 (morado). Menos común, asociado a códigos 200. Parece centrarse en URLs más largas.
+
+-   Clúster 5 (amarillo). Similar al clúster 2 pero menos prominente. Asociado con respuestas de redirección (302, 304).
+
+Los códigos 200 predominan en los clústeres asociados con URLs cortas, lo que sugiere que se trata mayormente de peticiones exitosas a páginas principales. Por otro lado, los errores 404, 500 y 501 se encuentran dispersos en URLs de diferentes longitudes, lo que podría reflejar una variedad de problemas en el servidor. Finalmente, las redirecciones 302 y 304 están agrupadas en clústeres con URLs de longitud media, posiblemente relacionadas con contenido estático como recursos o archivos comunes.
+
+Después de aplicar las correcciones mencionadas anteriormente, ahora podemos ver los clústeres mucho más definidos, lo que nos ayuda a poder sacar mejores conclusiones sobre los datos.
