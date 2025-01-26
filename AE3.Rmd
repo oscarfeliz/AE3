@@ -194,6 +194,41 @@ grafico_mensajes <- ggplot(data=frecuencia_mensajes, aes(x=Mensaje, y=Frecuencia
 print(grafico_mensajes)
 ```
 
+Si queremos generar un gráfico más complejo que contenga dos variables, podemos ver los mensajes de respuesta a los tipos de peticiones, siendo 200 la principal respuesta del servidor.
+
+```{r}
+# Creamos el gráfico con etiquetas que muestran el mensaje
+grafico_type_message <- ggplot(logs_df, aes(x = Type, fill = Mensaje)) +
+  geom_bar(position = "dodge") +
+  geom_text(stat = "count", aes(label = Mensaje, y = ..count..), position = position_dodge(width = 0.9), vjust = -0.5) +
+  labs(title = "Relación entre Type y Mensaje",
+       x = "Type",
+       y = "Frecuencia",
+       fill = "Mensaje") +
+  theme_minimal()
+
+print(grafico_type_message)
+```
+
+Para mayor interpretación, podemos excluir la respuesta 200 y ver en más detalle el resto.
+
+```{r}
+# Filtramos los datos para excluir el mensaje 200
+logs_df_filtrado <- subset(logs_df, Mensaje != 200)
+
+# Creamos el gráfico con etiquetas que muestran el mensaje
+grafico_type_message2 <- ggplot(logs_df_filtrado, aes(x = Type, fill = Mensaje)) +
+  geom_bar(position = "dodge") +
+  geom_text(stat = "count", aes(label = Mensaje, y = ..count..), position = position_dodge(width = 0.9), vjust = -0.5) +
+  labs(title = "Relación entre Type y Mensaje (excluyendo mensaje 200)",
+       x = "Type",
+       y = "Frecuencia",
+       fill = "Mensaje") +
+  theme_minimal()
+
+print(grafico_type_message2)
+```
+
 ### 7. Generar un gráfico que permita visualizar el número de peticiones servidas a lo largo del tiempo.
 
 ```{r}
@@ -263,8 +298,11 @@ epa_http_numeric$cluster_k4 <- kmeans_result_k4$cluster
 
 kmeans_result_k5 <- kmeans(epa_http_numeric, centers = 5, nstart = 25)
 epa_http_numeric$cluster_k5 <- kmeans_result_k5$cluster
+```
 
-# Gráficos de dispersión para k=2, k=3, k=4 y k=5
+### 9. Representad visualmente en gráficos de tipo scatter plot el resultado de vuestros clústering y interpretad el resultado obtenido
+
+```{# Gráficos de dispersión para k=2, k=3, k=4 y k=5}
 plot_k2 <- ggplot(epa_http_numeric, aes(x = URL_length, y = Response, color = factor(cluster_k2))) +
   geom_point() +
   labs(title = "Clústering de peticiones del servidor con k=2", x = "Longitud de URL", y = "Response", color = "Clúster")
